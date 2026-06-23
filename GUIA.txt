@@ -1,0 +1,185 @@
+========================================================================
+  AF.NAIL — GUIA PASSO A PASSO
+  Sistema de agendamento para salões de manicure
+========================================================================
+
+Repositório GitHub: https://github.com/H3n2ry/af-nail
+Conta GitHub: H3n2ry
+
+
+------------------------------------------------------------------------
+  1. O QUE INSTALAR ANTES (uma vez por PC)
+------------------------------------------------------------------------
+
+a) Node.js 20 ou superior
+   - Baixe em: https://nodejs.org  (escolha a versão LTS)
+   - Depois de instalar, abra um terminal NOVO e teste:
+        node --version
+        npm --version
+
+b) Git (se ainda não tiver)
+   - Baixe em: https://git-scm.com/downloads
+
+c) Wrangler (ferramenta da Cloudflare) — instale pelo terminal:
+        npm install -g wrangler
+
+d) Faça login na Cloudflare (abre o navegador):
+        wrangler login
+
+e) Faça login no GitHub (se for usar o gh):
+        gh auth login
+
+
+------------------------------------------------------------------------
+  2. BAIXAR O PROJETO NO NOVO PC
+------------------------------------------------------------------------
+
+Abra o terminal na pasta onde quer guardar o projeto e rode:
+
+        git clone https://github.com/H3n2ry/af-nail.git
+        cd af-nail
+
+
+------------------------------------------------------------------------
+  3. INSTALAR AS DEPENDÊNCIAS
+------------------------------------------------------------------------
+
+Dentro da pasta af-nail, instale as duas partes:
+
+        cd client
+        npm install
+        cd ..
+
+        cd worker
+        npm install
+        cd ..
+
+
+------------------------------------------------------------------------
+  4. CONFIGURAR O BANCO DE DADOS (Cloudflare D1)
+------------------------------------------------------------------------
+
+a) Crie o banco:
+        wrangler d1 create af-nail-db
+
+b) O comando acima vai mostrar um "database_id".
+   COPIE esse id e cole no arquivo  wrangler.toml , nesta linha:
+
+        [[d1_databases]]
+        binding = "DB"
+        database_name = "af-nail-db"
+        database_id = "COLE_O_ID_AQUI"   <-- aqui
+
+c) Aplique o schema (cria as tabelas) — versão LOCAL para testar:
+        wrangler d1 execute af-nail-db --local --file=schema.sql
+
+   Quando for para produção, rode SEM o --local:
+        wrangler d1 execute af-nail-db --file=schema.sql
+
+
+------------------------------------------------------------------------
+  5. CONFIGURAR A CHAVE DE SEGURANÇA (JWT)
+------------------------------------------------------------------------
+
+No arquivo  wrangler.toml , troque o valor de JWT_SECRET por uma
+senha/string longa e aleatória (mínimo 32 caracteres):
+
+        [vars]
+        JWT_SECRET = "troque_por_uma_string_aleatoria_bem_longa_123456"
+
+(Para produção, o ideal é usar:  wrangler secret put JWT_SECRET )
+
+
+------------------------------------------------------------------------
+  6. RODAR NO SEU COMPUTADOR (modo desenvolvimento)
+------------------------------------------------------------------------
+
+Você precisa de DOIS terminais abertos ao mesmo tempo:
+
+  TERMINAL 1 — a API (backend):
+        cd worker
+        npm run dev
+     (vai rodar em http://localhost:8787)
+
+  TERMINAL 2 — o site (frontend):
+        cd client
+        npm run dev
+     (vai rodar em http://localhost:5173)
+
+Depois é só abrir no navegador:  http://localhost:5173
+
+
+------------------------------------------------------------------------
+  7. PÁGINAS DO SISTEMA
+------------------------------------------------------------------------
+
+PORTAL DA CLIENTE:
+   /login              -> entrar
+   /register           -> criar conta
+   /app                -> início (buscar salões)
+   /app/appointments   -> meus agendamentos
+
+PORTAL DA PROFISSIONAL:
+   /pro/login          -> entrar
+   /pro/register       -> criar conta
+   /pro/create-salon   -> criar o salão (primeira vez)
+   /pro                -> painel principal
+   /pro/agenda         -> agenda (dia / semana / mês)
+   /pro/clients        -> clientes
+   /pro/services       -> serviços
+   /pro/earnings       -> ganhos
+   /pro/availability   -> horários de atendimento
+
+
+------------------------------------------------------------------------
+  8. COLOCAR NO AR (deploy na Cloudflare)
+------------------------------------------------------------------------
+
+a) Publicar a API (Worker):
+        cd worker
+        npm run deploy
+   Anote a URL que aparecer (ex: https://af-nail-worker.SEU_NOME.workers.dev)
+
+b) Publicar o site (Pages):
+        cd client
+   Crie o arquivo .env.production com a URL da API:
+        VITE_API_URL=https://af-nail-worker.SEU_NOME.workers.dev/api
+   Depois:
+        npm run build
+        wrangler pages deploy dist --project-name af-nail
+
+(O guia completo de deploy está no arquivo DEPLOY.md)
+
+
+------------------------------------------------------------------------
+  9. SALVAR SUAS MUDANÇAS NO GITHUB
+------------------------------------------------------------------------
+
+Sempre que mexer no código e quiser guardar/enviar:
+
+        git add .
+        git commit -m "descreva o que mudou"
+        git push
+
+Para baixar mudanças feitas em outro PC:
+
+        git pull
+
+
+------------------------------------------------------------------------
+  OBSERVAÇÕES IMPORTANTES
+------------------------------------------------------------------------
+
+- As pastas node_modules, dist e arquivos .env NÃO vão para o GitHub
+  (estão no .gitignore). Por isso, em cada PC novo, você precisa rodar
+  "npm install" de novo (passo 3).
+
+- O wrangler.toml está com valores de exemplo (placeholders). Lembre de
+  preencher o database_id e o JWT_SECRET em cada ambiente.
+
+- Preços no banco ficam em CENTAVOS (ex: R$ 85,00 = 8500).
+  Datas/horas como texto: data "2025-07-10", hora "14:00".
+
+========================================================================
+  Dúvidas? Veja também:  README.md  e  DEPLOY.md
+========================================================================
