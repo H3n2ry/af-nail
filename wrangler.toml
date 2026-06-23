@@ -1,0 +1,20 @@
+name = "af-nail-worker"
+main = "worker/src/index.ts"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "af-nail-db"
+database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+
+[vars]
+JWT_SECRET = "REPLACE_WITH_STRONG_SECRET_32_CHARS_MIN"
+FRONTEND_URL = "https://af-nail.pages.dev"
+
+[triggers]
+crons = ["0 * * * *"]
+
+# Cloudflare Pages build output
+[env.production]
+vars = { ENVIRONMENT = "production" }

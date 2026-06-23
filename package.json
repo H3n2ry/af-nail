@@ -1,0 +1,16 @@
+{
+  "name": "af-nail",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": ["client", "worker"],
+  "scripts": {
+    "dev:worker": "cd worker && npm run dev",
+    "dev:client": "cd client && npm run dev",
+    "build:client": "cd client && npm run build",
+    "deploy:worker": "cd worker && npm run deploy",
+    "db:create": "cd worker && npm run db:create",
+    "db:migrate": "wrangler d1 execute af-nail-db --file=schema.sql",
+    "db:migrate:local": "wrangler d1 execute af-nail-db --local --file=schema.sql",
+    "setup": "npm install && npm run db:create && npm run db:migrate:local"
+  }
+}

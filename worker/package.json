@@ -1,0 +1,22 @@
+{
+  "name": "af-nail-worker",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:create": "wrangler d1 create af-nail-db",
+    "db:migrate": "wrangler d1 execute af-nail-db --file=../schema.sql",
+    "db:migrate:local": "wrangler d1 execute af-nail-db --local --file=../schema.sql"
+  },
+  "dependencies": {
+    "hono": "^4.6.3",
+    "nanoid": "^5.0.7",
+    "bcryptjs": "^2.4.3"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241022.0",
+    "typescript": "^5.6.3",
+    "wrangler": "^3.80.0"
+  }
+}
