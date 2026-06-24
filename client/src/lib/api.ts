@@ -8,11 +8,24 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   };
   if (token) headers['Authorization'] = `Bearer ${token}`;
 
-  const res = await fetch(`${BASE_URL}${path}`, { ...options, headers });
-  const data = await res.json();
+  let res: Response;
+  try {
+    res = await fetch(`${BASE_URL}${path}`, { ...options, headers });
+  } catch {
+    throw new ApiError('Não foi possível conectar ao servidor. Verifique sua conexão.', 'NETWORK_ERROR', 0);
+  }
+
+  let data: any = null;
+  try {
+    data = await res.json();
+  } catch {
+    if (!res.ok) {
+      throw new ApiError(`Erro do servidor (${res.status}).`, 'SERVER_ERROR', res.status);
+    }
+  }
 
   if (!res.ok) {
-    throw new ApiError(data.error ?? 'Unknown error', data.code ?? 'UNKNOWN', res.status);
+    throw new ApiError(data?.error ?? 'Erro desconhecido', data?.code ?? 'UNKNOWN', res.status);
   }
   return data as T;
 }
