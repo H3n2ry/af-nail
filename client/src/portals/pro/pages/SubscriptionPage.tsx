@@ -76,7 +76,7 @@ export function SubscriptionPage() {
           </div>
 
           <div className="bg-primary-pale rounded-lg p-4 text-center">
-            <span className="font-mono text-3xl font-semibold text-accent">R$ 50,00</span>
+            <span className="font-mono text-3xl font-semibold text-accent">R$ 150,00</span>
             <span className="text-neutral-500 text-sm">/mês</span>
           </div>
 

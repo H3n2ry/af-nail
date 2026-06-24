@@ -8,7 +8,7 @@ function nanoid() {
   return crypto.randomUUID().replace(/-/g, '').slice(0, 21);
 }
 
-export const MONTHLY_PRICE_CENTS = 5000; // R$ 50,00
+export const MONTHLY_PRICE_CENTS = 15000; // R$ 150,00
 const THIRTY_DAYS = 30 * 24 * 3600;
 
 export type SubscriptionInfo = {

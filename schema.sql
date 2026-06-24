@@ -98,7 +98,7 @@ CREATE TABLE IF NOT EXISTS subscriptions (
   id TEXT PRIMARY KEY,
   professional_id TEXT NOT NULL REFERENCES users(id),
   status TEXT NOT NULL DEFAULT 'inactive' CHECK(status IN ('active','inactive','cancelled')),
-  amount_cents INTEGER NOT NULL DEFAULT 5000,   -- R$ 50,00
+  amount_cents INTEGER NOT NULL DEFAULT 15000,  -- R$ 150,00
   started_at INTEGER,
   expires_at INTEGER,
   created_at INTEGER NOT NULL,
