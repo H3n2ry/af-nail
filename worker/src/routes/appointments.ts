@@ -37,7 +37,7 @@ async function scheduleNotifications(
     {
       userId: clientId,
       type: 'reminder_2d' as const,
-      message: `Lembrete: você tem um agendamento de ${serviceName} amanhã às ${scheduledTime}.`,
+      message: `Lembrete: você tem um agendamento de ${serviceName} em 2 dias (${scheduledDate}) às ${scheduledTime}.`,
       scheduledFor: twoDaysBefore,
     },
     {
@@ -109,6 +109,23 @@ appointments.post('/', authMiddleware, async (c) => {
     return c.json({ error: 'Service not found or inactive', code: 'NOT_FOUND' }, 404);
   }
 
+  // Validate the slot (and combo's second slot) fits within the day's availability
+  const dayOfWeek = new Date(scheduled_date + 'T12:00:00Z').getDay();
+  const avail = await c.env.DB.prepare(
+    'SELECT start_time, end_time FROM availability WHERE professional_id = ? AND day_of_week = ?'
+  ).bind(professional_id, dayOfWeek).first<{ start_time: string; end_time: string }>();
+
+  if (!avail) {
+    return c.json({ error: 'Professional not available on this day', code: 'UNAVAILABLE' }, 409);
+  }
+
+  const occupiedMinutes = service.is_combo ? 120 : 60;
+  const slotEnd = addMinutesToTime(scheduled_time, occupiedMinutes);
+  const toMin = (t: string) => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
+  if (toMin(scheduled_time) < toMin(avail.start_time) || toMin(slotEnd) > toMin(avail.end_time)) {
+    return c.json({ error: 'Slot is outside the professional working hours', code: 'UNAVAILABLE' }, 409);
+  }
+
   // Check for conflicts
   const conflict = await c.env.DB.prepare(
     `SELECT id FROM appointments
@@ -133,13 +150,11 @@ appointments.post('/', authMiddleware, async (c) => {
   }
 
   // Get names for notifications
-  const [clientRow, professionalRow] = await Promise.all([
+  const [clientRow, professionalRow, serviceRow] = await Promise.all([
     c.env.DB.prepare('SELECT name FROM users WHERE id = ?').bind(user.sub).first<{ name: string }>(),
     c.env.DB.prepare('SELECT name FROM users WHERE id = ?').bind(professional_id).first<{ name: string }>(),
     c.env.DB.prepare('SELECT name FROM services WHERE id = ?').bind(service_id).first<{ name: string }>(),
   ]);
-
-  const serviceRow = await c.env.DB.prepare('SELECT name FROM services WHERE id = ?').bind(service_id).first<{ name: string }>();
 
   const id = nanoid();
   const now = Math.floor(Date.now() / 1000);
