@@ -1,6 +1,7 @@
 import React from 'react';
 import { Service } from '../lib/api';
 import { formatCurrency } from '../lib/utils';
+import { Toggle } from './Toggle';
 
 type Props = {
   service: Service;
@@ -42,12 +43,7 @@ export function ServiceCard({ service, onBook, showToggle, onToggle, onEdit }: P
                 </svg>
               </button>
             )}
-            <button
-              onClick={onToggle}
-              className={`relative w-10 h-5 rounded-full transition-colors duration-200 ${service.is_active ? 'bg-primary' : 'bg-neutral-200'}`}
-            >
-              <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 ${service.is_active ? 'translate-x-5' : 'translate-x-0.5'}`} />
-            </button>
+            <Toggle checked={!!service.is_active} onChange={() => onToggle?.()} />
           </div>
         )}
       </div>

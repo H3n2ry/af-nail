@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuthStore } from '../../../store/auth';
 import { availabilityApi, AvailabilityInput } from '../../../lib/api';
 import { DAY_NAMES_FULL } from '../../../lib/utils';
+import { Toggle } from '../../../components/Toggle';
 
 const DEFAULT_START = '09:00';
 const DEFAULT_END = '18:00';
@@ -70,12 +71,7 @@ export function AvailabilityPage() {
           <div key={day.day_of_week} className={`card p-4 transition-opacity ${!day.active ? 'opacity-60' : ''}`}>
             <div className="flex items-center justify-between mb-3">
               <span className="font-semibold text-neutral-900">{DAY_NAMES_FULL[day.day_of_week]}</span>
-              <button
-                onClick={() => updateDay(day.day_of_week, { active: !day.active })}
-                className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${day.active ? 'bg-primary' : 'bg-neutral-200'}`}
-              >
-                <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 ${day.active ? 'translate-x-6' : 'translate-x-1'}`} />
-              </button>
+              <Toggle checked={day.active} onChange={() => updateDay(day.day_of_week, { active: !day.active })} />
             </div>
 
             {day.active && (
