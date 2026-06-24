@@ -60,7 +60,14 @@ export const salonApi = {
 export const serviceApi = {
   create: (data: { name: string; description?: string; price_cents: number; duration_minutes?: number; is_combo?: boolean }) =>
     api.post<{ service: Service }>('/services', data),
-  update: (id: string, data: Partial<Service & { is_active: boolean; is_combo: boolean }>) =>
+  update: (id: string, data: Partial<{
+    name: string;
+    description: string | null;
+    price_cents: number;
+    duration_minutes: number;
+    is_combo: boolean;
+    is_active: boolean;
+  }>) =>
     api.patch<{ success: boolean }>(`/services/${id}`, data),
   delete: (id: string) => api.delete<{ success: boolean }>(`/services/${id}`),
   mine: () => api.get<{ services: Service[] }>('/services/mine'),

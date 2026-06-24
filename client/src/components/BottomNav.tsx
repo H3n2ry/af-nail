@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 
-type NavItem = { to: string; label: string; icon: React.ReactNode };
+type NavItem = { to: string; label: string; icon: (active: boolean) => React.ReactNode };
 
 function NavIcon({ children, active }: { children: React.ReactNode; active: boolean }) {
   return (
@@ -132,7 +132,7 @@ export function BottomNav({ portal }: Props) {
           >
             {({ isActive }) => (
               <>
-                {(item.icon as (a: boolean) => React.ReactNode)(isActive)}
+                {item.icon(isActive)}
                 <span className="text-[10px] font-medium">{item.label}</span>
               </>
             )}
