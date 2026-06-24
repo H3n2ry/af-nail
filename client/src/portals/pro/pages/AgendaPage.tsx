@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { appointmentApi, AppointmentWithDetails } from '../../../lib/api';
 import { formatCurrency, today, addDays, getMondayOfWeek, getWeekDates, DAY_NAMES, DAY_NAMES_FULL } from '../../../lib/utils';
 import { Modal } from '../../../components/Modal';
@@ -155,6 +156,21 @@ export function AgendaPage() {
           ))}
         </div>
       </div>
+
+      {/* Acesso à disponibilidade — onde a profissional libera os horários */}
+      <Link
+        to="/pro/availability"
+        className="flex items-center justify-between mb-4 px-4 py-3 rounded-lg bg-primary-pale border border-primary-light hover:bg-primary/10 transition-colors"
+      >
+        <span className="flex items-center gap-2 text-sm font-medium text-neutral-900">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <circle cx="9" cy="9" r="7" stroke="#C9607A" strokeWidth="1.5" />
+            <path d="M9 5v4l2.5 1.5" stroke="#C9607A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          Configurar meus horários de atendimento
+        </span>
+        <span className="text-primary font-semibold">→</span>
+      </Link>
 
       {/* Date navigation */}
       <div className="flex items-center justify-between mb-4 card px-4 py-3">

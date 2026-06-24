@@ -67,6 +67,21 @@ export function DashboardPage() {
         <span className="text-primary font-medium">Gerenciar</span>
       </button>
 
+      {/* Atalho para configurar horários (libera a agenda) */}
+      <button
+        onClick={() => navigate('/pro/availability')}
+        className="w-full flex items-center justify-between mb-6 px-4 py-3 rounded-lg bg-primary-pale border border-primary-light text-sm hover:bg-primary/10 transition-colors"
+      >
+        <span className="flex items-center gap-2 font-medium text-neutral-900">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <circle cx="9" cy="9" r="7" stroke="#C9607A" strokeWidth="1.5" />
+            <path d="M9 5v4l2.5 1.5" stroke="#C9607A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          Configurar meus horários de atendimento
+        </span>
+        <span className="text-primary font-semibold">→</span>
+      </button>
+
       {/* Period tabs */}
       <div className="flex gap-1 mb-6 bg-neutral-100 rounded-full p-1">
         {(['today', 'week', 'month'] as PeriodTab[]).map(p => (
