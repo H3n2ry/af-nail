@@ -13,6 +13,10 @@ build/
 .dev.vars
 worker/.wrangler/
 
+# Vercel
+.vercel/
+client/.vercel/
+
 # Environment
 .env
 .env.local
