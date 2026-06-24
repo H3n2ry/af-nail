@@ -13,6 +13,11 @@ build/
 .dev.vars
 worker/.wrangler/
 
+# Secrets locais (tokens, chaves) — NUNCA versionar
+.secrets/
+*.secret
+*.token
+
 # Vercel
 .vercel/
 client/.vercel/
