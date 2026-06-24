@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../../store/auth';
 import { dashboardApi, appointmentApi, AppointmentDashboard, AppointmentWithDetails } from '../../../lib/api';
-import { formatCurrency, formatDate } from '../../../lib/utils';
+import { formatCurrency, formatDate, formatDateShort } from '../../../lib/utils';
 import { AppointmentCard } from '../../../components/AppointmentCard';
 
 type PeriodTab = 'today' | 'week' | 'month';
 
 export function DashboardPage() {
   const user = useAuthStore(s => s.user);
+  const subscription = useAuthStore(s => s.subscription);
   const [period, setPeriod] = useState<PeriodTab>('today');
   const [data, setData] = useState<AppointmentDashboard | null>(null);
   const [loading, setLoading] = useState(true);
@@ -53,6 +54,18 @@ export function DashboardPage() {
         <p className="text-neutral-500 text-sm">Bem-vinda de volta</p>
         <h2 className="font-display text-2xl font-semibold text-neutral-900">{user?.name.split(' ')[0]} ✨</h2>
       </div>
+
+      {/* Status da assinatura */}
+      <button
+        onClick={() => navigate('/pro/subscription')}
+        className="w-full flex items-center justify-between mb-6 px-4 py-2.5 rounded-full bg-success/10 text-sm hover:bg-success/15 transition-colors"
+      >
+        <span className="flex items-center gap-2 text-neutral-900">
+          <span className="w-2 h-2 rounded-full bg-success" />
+          Assinatura ativa{subscription?.expires_at ? ` · até ${formatDateShort(new Date(subscription.expires_at * 1000).toISOString().slice(0, 10))}` : ''}
+        </span>
+        <span className="text-primary font-medium">Gerenciar</span>
+      </button>
 
       {/* Period tabs */}
       <div className="flex gap-1 mb-6 bg-neutral-100 rounded-full p-1">

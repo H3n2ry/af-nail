@@ -93,7 +93,21 @@ CREATE TABLE IF NOT EXISTS notifications (
   created_at INTEGER NOT NULL
 );
 
+-- Assinatura mensal da profissional (R$50/mês destrava o portal)
+CREATE TABLE IF NOT EXISTS subscriptions (
+  id TEXT PRIMARY KEY,
+  professional_id TEXT NOT NULL REFERENCES users(id),
+  status TEXT NOT NULL DEFAULT 'inactive' CHECK(status IN ('active','inactive','cancelled')),
+  amount_cents INTEGER NOT NULL DEFAULT 5000,   -- R$ 50,00
+  started_at INTEGER,
+  expires_at INTEGER,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  UNIQUE(professional_id)
+);
+
 -- Índices
+CREATE INDEX IF NOT EXISTS idx_subscriptions_prof ON subscriptions(professional_id);
 CREATE INDEX IF NOT EXISTS idx_appointments_date ON appointments(scheduled_date, professional_id);
 CREATE INDEX IF NOT EXISTS idx_appointments_status ON appointments(status, professional_id);
 CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id, is_read);

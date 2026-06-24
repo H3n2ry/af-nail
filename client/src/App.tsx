@@ -18,6 +18,7 @@ import { NotificationsPage } from './portals/client/pages/NotificationsPage';
 
 // Pro portal
 import { ProLayout } from './portals/pro/ProLayout';
+import { SubscriptionPage } from './portals/pro/pages/SubscriptionPage';
 import { CreateSalonPage } from './portals/pro/pages/CreateSalonPage';
 import { DashboardPage } from './portals/pro/pages/DashboardPage';
 import { AgendaPage } from './portals/pro/pages/AgendaPage';
@@ -37,6 +38,12 @@ function RequireAuth({ children, role }: { children: React.ReactNode; role: 'cli
   if (user.role !== role) {
     return <Navigate to={user.role === 'professional' ? '/pro' : '/app'} replace />;
   }
+  return <>{children}</>;
+}
+
+function RequireProSubscription({ children }: { children: React.ReactNode }) {
+  const subscription = useAuthStore(s => s.subscription);
+  if (!subscription?.active) return <Navigate to="/pro/subscription" replace />;
   return <>{children}</>;
 }
 
@@ -78,9 +85,16 @@ export default function App() {
       <Route path="/pro/login" element={<ProLoginPage />} />
       <Route path="/pro/register" element={<ProRegisterPage />} />
 
-      {/* Pro onboarding */}
+      {/* Pro: assinatura (paywall) — acessível sem assinatura ativa */}
+      <Route path="/pro/subscription" element={
+        <RequireAuth role="professional"><SubscriptionPage /></RequireAuth>
+      } />
+
+      {/* Pro onboarding — exige assinatura ativa */}
       <Route path="/pro/create-salon" element={
-        <RequireAuth role="professional"><CreateSalonPage /></RequireAuth>
+        <RequireAuth role="professional">
+          <RequireProSubscription><CreateSalonPage /></RequireProSubscription>
+        </RequireAuth>
       } />
 
       {/* Client portal */}
@@ -93,12 +107,14 @@ export default function App() {
         <Route path="notifications" element={<NotificationsPage />} />
       </Route>
 
-      {/* Pro portal */}
+      {/* Pro portal — exige assinatura ativa + salão */}
       <Route path="/pro" element={
         <RequireAuth role="professional">
-          <RequireProSalon>
-            <ProLayout />
-          </RequireProSalon>
+          <RequireProSubscription>
+            <RequireProSalon>
+              <ProLayout />
+            </RequireProSalon>
+          </RequireProSubscription>
         </RequireAuth>
       }>
         <Route index element={<DashboardPage />} />

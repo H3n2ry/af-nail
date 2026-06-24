@@ -54,7 +54,22 @@ export const authApi = {
     api.post<{ token: string; user: User }>('/auth/register', data),
   login: (email: string, password: string) =>
     api.post<{ token: string; user: User }>('/auth/login', { email, password }),
-  me: () => api.get<{ user: User; salon: Salon | null }>('/auth/me'),
+  me: () => api.get<{ user: User; salon: Salon | null; subscription: Subscription | null }>('/auth/me'),
+};
+
+// Assinatura da profissional (R$50/mês)
+export const subscriptionApi = {
+  get: () => api.get<{ subscription: Subscription }>('/subscription'),
+  activate: () => api.post<{ subscription: Subscription; test_mode: boolean }>('/subscription/activate', {}),
+  cancel: () => api.post<{ subscription: Subscription }>('/subscription/cancel', {}),
+};
+
+export type Subscription = {
+  status: 'active' | 'inactive' | 'cancelled';
+  amount_cents: number;
+  started_at: number | null;
+  expires_at: number | null;
+  active: boolean;
 };
 
 // Salons

@@ -8,6 +8,7 @@ import availabilityRoutes from './routes/availability';
 import appointmentRoutes from './routes/appointments';
 import notificationRoutes from './routes/notifications';
 import dashboardRoutes from './routes/dashboard';
+import subscriptionRoutes from './routes/subscription';
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -29,6 +30,7 @@ app.route('/api/professionals', availabilityRoutes);
 app.route('/api/appointments', appointmentRoutes);
 app.route('/api/notifications', notificationRoutes);
 app.route('/api/dashboard', dashboardRoutes);
+app.route('/api/subscription', subscriptionRoutes);
 
 // Cron trigger — process pending notifications
 export default {

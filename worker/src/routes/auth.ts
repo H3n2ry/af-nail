@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { Env, JWTPayload } from '../types';
 import { signJWT, authMiddleware, hashPassword, verifyPassword } from '../middleware/auth';
+import { getSubscription } from './subscription';
 
 const auth = new Hono<{ Bindings: Env; Variables: { user: JWTPayload } }>();
 
@@ -67,8 +68,9 @@ auth.get('/me', authMiddleware, async (c) => {
 
   if (!user) return c.json({ error: 'User not found', code: 'NOT_FOUND' }, 404);
 
-  // Check if professional has a salon
+  // Check if professional has a salon + subscription
   let salon = null;
+  let subscription = null;
   if (jwtUser.role === 'professional') {
     salon = await c.env.DB.prepare(
       `SELECT s.id, s.name, s.slug, s.description, s.address
@@ -76,9 +78,10 @@ auth.get('/me', authMiddleware, async (c) => {
        JOIN salon_professionals sp ON sp.salon_id = s.id
        WHERE sp.professional_id = ?`
     ).bind(jwtUser.sub).first();
+    subscription = await getSubscription(c.env.DB, jwtUser.sub);
   }
 
-  return c.json({ user, salon });
+  return c.json({ user, salon, subscription });
 });
 
 export default auth;
