@@ -176,8 +176,8 @@ export function ServicesPage() {
             }}
               className="w-4 h-4 accent-primary" />
             <div>
-              <span className="font-medium text-neutral-900 text-sm">Combo pé + mão</span>
-              <p className="text-xs text-neutral-500">Ocupa 2 slots consecutivos (120 min)</p>
+              <span className="font-medium text-neutral-900 text-sm">Combo</span>
+              <p className="text-xs text-neutral-500">Ocupa 2 horários consecutivos (o dobro da duração)</p>
             </div>
           </label>
 
