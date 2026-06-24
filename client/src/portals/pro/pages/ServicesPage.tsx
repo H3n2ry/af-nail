@@ -166,7 +166,14 @@ export function ServicesPage() {
             </div>
           </div>
           <label className="flex items-center gap-3 cursor-pointer">
-            <input type="checkbox" checked={form.is_combo} onChange={e => setForm(f => ({ ...f, is_combo: e.target.checked }))}
+            <input type="checkbox" checked={form.is_combo} onChange={e => {
+              const checked = e.target.checked;
+              setForm(f => {
+                const cur = parseInt(f.duration_minutes) || 60;
+                const next = checked ? cur * 2 : Math.max(30, Math.round(cur / 2));
+                return { ...f, is_combo: checked, duration_minutes: String(next) };
+              });
+            }}
               className="w-4 h-4 accent-primary" />
             <div>
               <span className="font-medium text-neutral-900 text-sm">Combo pé + mão</span>
