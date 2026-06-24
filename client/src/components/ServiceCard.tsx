@@ -12,7 +12,7 @@ type Props = {
 
 export function ServiceCard({ service, onBook, showToggle, onToggle, onEdit }: Props) {
   return (
-    <div className={`card p-4 flex flex-col gap-3 ${!service.is_active ? 'opacity-60' : ''}`}>
+    <div className={`card p-4 flex flex-col gap-3 ${service.is_active === 0 ? 'opacity-60' : ''}`}>
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1">
           <div className="flex items-center gap-2">
@@ -59,7 +59,7 @@ export function ServiceCard({ service, onBook, showToggle, onToggle, onEdit }: P
         {onBook && (
           <button
             onClick={onBook}
-            disabled={!service.is_active}
+            disabled={service.is_active === 0}
             className="btn-primary text-sm px-5 py-2 min-h-[40px]"
           >
             Agendar
