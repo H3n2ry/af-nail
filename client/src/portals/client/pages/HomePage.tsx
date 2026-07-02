@@ -3,13 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../../store/auth';
 import { salonApi, Salon, SalonType } from '../../../lib/api';
 
-type FilterOption = { value: SalonType | 'all'; label: string; icon: string };
+type TabValue = SalonType | 'all' | 'mine';
 
-const FILTERS: FilterOption[] = [
-  { value: 'all', label: 'Todos', icon: '✦' },
-  { value: 'nail', label: 'Manicure', icon: '💅' },
-  { value: 'hair', label: 'Cabelo', icon: '✂️' },
-  { value: 'barber', label: 'Barbearia', icon: '🪒' },
+const TABS: { value: TabValue; label: string }[] = [
+  { value: 'all',    label: 'Todos' },
+  { value: 'nail',   label: 'Manicure' },
+  { value: 'hair',   label: 'Cabelo' },
+  { value: 'barber', label: 'Barbearia' },
+  { value: 'mine',   label: 'Meus Salões' },
 ];
 
 const SALON_TYPE_LABEL: Record<SalonType, string> = {
@@ -21,10 +22,10 @@ const SALON_TYPE_LABEL: Record<SalonType, string> = {
 export function HomePage() {
   const user = useAuthStore(s => s.user);
   const [query, setQuery] = useState('');
-  const [activeFilter, setActiveFilter] = useState<SalonType | 'all'>('all');
-  const [results, setResults] = useState<Salon[]>([]);
+  const [activeTab, setActiveTab] = useState<TabValue>('all');
+  const [salons, setSalons] = useState<Salon[]>([]);
   const [mySalons, setMySalons] = useState<Salon[]>([]);
-  const [searching, setSearching] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [connecting, setConnecting] = useState<string | null>(null);
   const navigate = useNavigate();
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
@@ -34,17 +35,17 @@ export function HomePage() {
   }, []);
 
   useEffect(() => {
+    if (activeTab === 'mine') return;
     clearTimeout(debounceRef.current);
-    if (query.trim().length < 2 && activeFilter === 'all') { setResults([]); return; }
-    setSearching(true);
+    setLoading(true);
     debounceRef.current = setTimeout(() => {
-      const type = activeFilter !== 'all' ? activeFilter : undefined;
+      const type = activeTab !== 'all' ? (activeTab as SalonType) : undefined;
       salonApi.search(query, type)
-        .then(r => setResults(r.salons))
-        .catch(() => setResults([]))
-        .finally(() => setSearching(false));
-    }, 400);
-  }, [query, activeFilter]);
+        .then(r => setSalons(r.salons))
+        .catch(() => setSalons([]))
+        .finally(() => setLoading(false));
+    }, query ? 400 : 0);
+  }, [query, activeTab]);
 
   async function handleConnect(salon: Salon) {
     setConnecting(salon.id);
@@ -61,12 +62,11 @@ export function HomePage() {
   }
 
   const connectedIds = new Set(mySalons.map(s => s.id));
-  const showResults = results.length > 0;
-  const showEmpty = (query.trim().length >= 2 || activeFilter !== 'all') && !searching && results.length === 0;
+  const displayList = activeTab === 'mine' ? mySalons : salons;
 
   return (
     <div className="page-container pt-4">
-      <div className="mb-6">
+      <div className="mb-5">
         <h2 className="font-display text-2xl font-semibold text-neutral-900 mb-1">
           Olá, {user?.name.split(' ')[0]}
         </h2>
@@ -74,7 +74,7 @@ export function HomePage() {
       </div>
 
       {/* Search */}
-      <div className="relative mb-3">
+      <div className="relative mb-4">
         <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500" width="18" height="18" viewBox="0 0 18 18" fill="none">
           <circle cx="8" cy="8" r="5.5" stroke="currentColor" strokeWidth="1.5" />
           <path d="M12.5 12.5L16 16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
@@ -83,40 +83,57 @@ export function HomePage() {
           type="search"
           value={query}
           onChange={e => setQuery(e.target.value)}
-          placeholder="Buscar salões pelo nome..."
+          placeholder="Buscar pelo nome..."
           className="input pl-10"
         />
-        {searching && (
+        {loading && (
           <span className="absolute right-3 top-1/2 -translate-y-1/2">
             <span className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin block" />
           </span>
         )}
       </div>
 
-      {/* Category filter chips */}
-      <div className="flex gap-2 mb-6 overflow-x-auto pb-1">
-        {FILTERS.map(f => (
+      {/* Category tabs */}
+      <div className="flex gap-2 mb-5 overflow-x-auto pb-1 -mx-4 px-4">
+        {TABS.map(tab => (
           <button
-            key={f.value}
-            onClick={() => setActiveFilter(f.value)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-150 border-2 ${
-              activeFilter === f.value
+            key={tab.value}
+            onClick={() => setActiveTab(tab.value)}
+            className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-150 border-2 ${
+              activeTab === tab.value
                 ? 'bg-primary text-white border-primary'
                 : 'bg-surface text-neutral-500 border-neutral-100 hover:border-primary/40'
             }`}
           >
-            <span>{f.icon}</span>
-            {f.label}
+            {tab.label}
           </button>
         ))}
       </div>
 
-      {/* Search results */}
-      {showResults && (
-        <div className="mb-6 space-y-2 animate-fade-in">
-          <h3 className="text-sm font-semibold text-neutral-500 uppercase tracking-wider">Resultados</h3>
-          {results.map(salon => (
-            <div key={salon.id} className="card p-4 flex items-center justify-between gap-3">
+      {/* Salon list */}
+      {loading && activeTab !== 'mine' ? (
+        <div className="space-y-3">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="h-20 bg-neutral-100 rounded-lg animate-pulse" />
+          ))}
+        </div>
+      ) : displayList.length === 0 ? (
+        <div className="text-center py-12">
+          <p className="text-neutral-500 text-sm">
+            {activeTab === 'mine'
+              ? 'Conecte-se a um salão para começar a agendar'
+              : query
+              ? `Nenhum salão encontrado para "${query}"`
+              : 'Nenhum salão cadastrado nesta categoria ainda'}
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-3 animate-fade-in">
+          {displayList.map(salon => (
+            <div key={salon.id} className="card p-4 flex items-center gap-3">
+              <div className="w-11 h-11 rounded-full bg-primary/10 text-primary flex items-center justify-center font-display font-semibold text-lg flex-shrink-0">
+                {salon.name[0]}
+              </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-0.5">
                   <p className="font-semibold text-neutral-900 truncate">{salon.name}</p>
@@ -124,17 +141,20 @@ export function HomePage() {
                     {SALON_TYPE_LABEL[salon.type] ?? salon.type}
                   </span>
                 </div>
-                {salon.address && <p className="text-sm text-neutral-500 truncate">{salon.address}</p>}
+                {salon.address && <p className="text-xs text-neutral-500 truncate">{salon.address}</p>}
               </div>
-              {connectedIds.has(salon.id) ? (
-                <button onClick={() => navigate(`/app/salon/${salon.id}`)} className="btn-secondary text-sm px-4 py-2 min-h-[36px]">
+              {activeTab === 'mine' || connectedIds.has(salon.id) ? (
+                <button
+                  onClick={() => navigate(`/app/salon/${salon.id}`)}
+                  className="btn-secondary text-sm px-4 py-2 min-h-[36px] flex-shrink-0"
+                >
                   Acessar
                 </button>
               ) : (
                 <button
                   onClick={() => handleConnect(salon)}
                   disabled={connecting === salon.id}
-                  className="btn-primary text-sm px-4 py-2 min-h-[36px]"
+                  className="btn-primary text-sm px-4 py-2 min-h-[36px] flex-shrink-0"
                 >
                   {connecting === salon.id ? '...' : 'Conectar'}
                 </button>
@@ -143,55 +163,6 @@ export function HomePage() {
           ))}
         </div>
       )}
-
-      {showEmpty && (
-        <div className="text-center py-6 animate-fade-in">
-          <p className="text-neutral-500 text-sm">
-            {query.trim().length >= 2
-              ? `Nenhum salão encontrado para "${query}"`
-              : `Nenhum ${activeFilter !== 'all' ? SALON_TYPE_LABEL[activeFilter] : 'salão'} cadastrado ainda`}
-          </p>
-        </div>
-      )}
-
-      {/* My salons */}
-      <div>
-        <h3 className="text-sm font-semibold text-neutral-500 uppercase tracking-wider mb-3">Meus Salões</h3>
-        {mySalons.length === 0 ? (
-          <div className="text-center py-10 space-y-2">
-            <span className="text-4xl">✦</span>
-            <p className="text-neutral-500 text-sm">Conecte-se a um salão para começar a agendar</p>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {mySalons.map(salon => (
-              <button
-                key={salon.id}
-                onClick={() => navigate(`/app/salon/${salon.id}`)}
-                className="card p-4 w-full text-left flex items-center gap-3 hover:border-primary transition-colors"
-              >
-                <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-display font-semibold text-lg">
-                  {salon.name[0]}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <p className="font-semibold text-neutral-900 truncate">{salon.name}</p>
-                    <span className="text-xs text-neutral-500 bg-neutral-100 px-2 py-0.5 rounded-full flex-shrink-0">
-                      {SALON_TYPE_LABEL[salon.type] ?? salon.type}
-                    </span>
-                  </div>
-                  {salon.description && (
-                    <p className="text-sm text-neutral-500 truncate">{salon.description}</p>
-                  )}
-                </div>
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-neutral-500 flex-shrink-0">
-                  <path d="M6 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
     </div>
   );
 }

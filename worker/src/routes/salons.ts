@@ -24,13 +24,17 @@ salons.get('/search', authMiddleware, async (c) => {
   let query: string;
   let bindings: unknown[];
 
+  const baseSelect = `SELECT s.id, s.name, s.slug, s.type, s.description, s.address,
+             COUNT(sc.client_id) AS client_count
+             FROM salons s
+             LEFT JOIN salon_clients sc ON sc.salon_id = s.id`;
+  const orderBy = `GROUP BY s.id ORDER BY client_count DESC LIMIT 20`;
+
   if (type && validTypes.includes(type)) {
-    query = `SELECT id, name, slug, type, description, address FROM salons
-             WHERE LOWER(name) LIKE LOWER(?) AND type = ? LIMIT 20`;
+    query = `${baseSelect} WHERE LOWER(s.name) LIKE LOWER(?) AND s.type = ? ${orderBy}`;
     bindings = [`%${q}%`, type];
   } else {
-    query = `SELECT id, name, slug, type, description, address FROM salons
-             WHERE LOWER(name) LIKE LOWER(?) LIMIT 20`;
+    query = `${baseSelect} WHERE LOWER(s.name) LIKE LOWER(?) ${orderBy}`;
     bindings = [`%${q}%`];
   }
 
