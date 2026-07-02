@@ -13,7 +13,13 @@ import subscriptionRoutes from './routes/subscription';
 const app = new Hono<{ Bindings: Env }>();
 
 app.use('*', cors({
-  origin: (origin) => origin ?? '*',
+  origin: (origin, c) => {
+    const allowed = c.env.FRONTEND_URL;
+    // Allow the configured frontend and localhost (dev). Reject everything else.
+    if (origin === allowed) return origin;
+    if (origin && /^http:\/\/localhost:\d+$/.test(origin)) return origin;
+    return allowed; // fallback: never reflect an arbitrary origin
+  },
   allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowHeaders: ['Content-Type', 'Authorization'],
   maxAge: 86400,

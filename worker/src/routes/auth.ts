@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { Env, JWTPayload } from '../types';
-import { signJWT, authMiddleware, hashPassword, verifyPassword } from '../middleware/auth';
+import { signJWT, authMiddleware, hashPassword, verifyPassword, needsRehash } from '../middleware/auth';
 import { getSubscription } from './subscription';
 
 const auth = new Hono<{ Bindings: Env; Variables: { user: JWTPayload } }>();
@@ -53,6 +53,13 @@ auth.post('/login', async (c) => {
 
   if (!user || !(await verifyPassword(body.password, user.password_hash))) {
     return c.json({ error: 'Invalid credentials', code: 'INVALID_CREDENTIALS' }, 401);
+  }
+
+  // Transparently upgrade legacy (SHA-256) hashes to PBKDF2 on successful login
+  if (needsRehash(user.password_hash)) {
+    const upgraded = await hashPassword(body.password);
+    await c.env.DB.prepare('UPDATE users SET password_hash = ? WHERE id = ?')
+      .bind(upgraded, user.id).run();
   }
 
   const token = await signJWT({ sub: user.id, name: user.name, email: user.email, role: user.role }, c.env.JWT_SECRET);

@@ -131,10 +131,18 @@ salons.get('/:id/services', authMiddleware, async (c) => {
   return c.json({ services: services.results });
 });
 
-// Get clients of a salon (professional only)
+// Get clients of a salon (professional who owns the salon only)
 salons.get('/:id/clients', authMiddleware, async (c) => {
   const user = c.get('user');
   if (user.role !== 'professional') {
+    return c.json({ error: 'Forbidden', code: 'FORBIDDEN' }, 403);
+  }
+
+  // Ensure the professional actually owns this salon (prevent cross-salon data access)
+  const owns = await c.env.DB.prepare(
+    'SELECT 1 FROM salon_professionals WHERE salon_id = ? AND professional_id = ?'
+  ).bind(c.req.param('id'), user.sub).first();
+  if (!owns) {
     return c.json({ error: 'Forbidden', code: 'FORBIDDEN' }, 403);
   }
 
