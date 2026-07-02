@@ -17,7 +17,9 @@ export function ServiceCard({ service, onBook, showToggle, onToggle, onEdit }: P
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1">
           <div className="flex items-center gap-2">
-            <span className="text-lg">💅</span>
+            <span className="w-5 h-5 rounded-full bg-primary/15 flex items-center justify-center flex-shrink-0">
+              <span className="w-2 h-2 rounded-full bg-primary" />
+            </span>
             <h3 className="font-semibold text-neutral-900">{service.name}</h3>
             {service.is_combo ? (
               <span className="badge badge-confirmed text-[10px]">Combo</span>

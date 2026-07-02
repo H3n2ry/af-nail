@@ -112,7 +112,6 @@ export function ServicesPage() {
         </div>
       ) : services.length === 0 ? (
         <div className="text-center py-16 space-y-3">
-          <span className="text-5xl">💅</span>
           <p className="text-neutral-500">Nenhum serviço cadastrado</p>
           <button onClick={openCreate} className="btn-primary">Criar primeiro serviço</button>
         </div>
