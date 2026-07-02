@@ -29,7 +29,7 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true });
         try {
           const { token, user } = await authApi.login(email, password);
-          localStorage.setItem('af_nail_token', token);
+          localStorage.setItem('af_salon_token', token);
           set({ token, user, isLoading: false });
           // fetch salon + subscription if professional
           if (user.role === 'professional') {
@@ -49,7 +49,7 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true });
         try {
           const { token, user } = await authApi.register(data);
-          localStorage.setItem('af_nail_token', token);
+          localStorage.setItem('af_salon_token', token);
           set({ token, user, isLoading: false });
         } catch (e) {
           set({ isLoading: false });
@@ -58,7 +58,7 @@ export const useAuthStore = create<AuthState>()(
       },
 
       logout: () => {
-        localStorage.removeItem('af_nail_token');
+        localStorage.removeItem('af_salon_token');
         set({ user: null, token: null, salon: null, subscription: null });
       },
 
@@ -79,7 +79,7 @@ export const useAuthStore = create<AuthState>()(
       setSubscription: (subscription) => set({ subscription }),
     }),
     {
-      name: 'af-nail-auth',
+      name: 'af-salon-auth',
       partialize: (state) => ({ user: state.user, token: state.token, salon: state.salon, subscription: state.subscription }),
     }
   )

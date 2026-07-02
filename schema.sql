@@ -1,11 +1,13 @@
--- Af.nail — Schema D1 (SQLite edge)
--- Execute via: wrangler d1 execute af-nail-db --file=schema.sql
+-- Af.salon — Schema D1 (SQLite edge)
+-- Execute via: wrangler d1 execute af-salon-db --file=schema.sql
+-- Migration para bancos existentes: wrangler d1 execute af-salon-db --command "ALTER TABLE salons ADD COLUMN type TEXT NOT NULL DEFAULT 'nail' CHECK(type IN ('nail','hair','barber'))"
 
 -- Salões
 CREATE TABLE IF NOT EXISTS salons (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
   slug TEXT UNIQUE NOT NULL,
+  type TEXT NOT NULL DEFAULT 'nail' CHECK(type IN ('nail','hair','barber')),
   description TEXT,
   address TEXT,
   created_at INTEGER NOT NULL

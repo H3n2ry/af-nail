@@ -18,10 +18,23 @@ function slugify(text: string): string {
 // Search salons
 salons.get('/search', authMiddleware, async (c) => {
   const q = c.req.query('q') ?? '';
-  const results = await c.env.DB.prepare(
-    `SELECT id, name, slug, description, address FROM salons
-     WHERE LOWER(name) LIKE LOWER(?) LIMIT 20`
-  ).bind(`%${q}%`).all();
+  const type = c.req.query('type');
+  const validTypes = ['nail', 'hair', 'barber'];
+
+  let query: string;
+  let bindings: unknown[];
+
+  if (type && validTypes.includes(type)) {
+    query = `SELECT id, name, slug, type, description, address FROM salons
+             WHERE LOWER(name) LIKE LOWER(?) AND type = ? LIMIT 20`;
+    bindings = [`%${q}%`, type];
+  } else {
+    query = `SELECT id, name, slug, type, description, address FROM salons
+             WHERE LOWER(name) LIKE LOWER(?) LIMIT 20`;
+    bindings = [`%${q}%`];
+  }
+
+  const results = await c.env.DB.prepare(query).bind(...bindings).all();
   return c.json({ salons: results.results });
 });
 
@@ -39,29 +52,32 @@ salons.post('/', authMiddleware, async (c) => {
     return c.json({ error: 'Already linked to a salon', code: 'ALREADY_LINKED' }, 409);
   }
 
-  const body = await c.req.json<{ name: string; description?: string; address?: string }>();
+  const body = await c.req.json<{ name: string; type?: string; description?: string; address?: string }>();
   if (!body.name) return c.json({ error: 'Name is required', code: 'VALIDATION_ERROR' }, 400);
+
+  const validTypes = ['nail', 'hair', 'barber'];
+  const type = body.type && validTypes.includes(body.type) ? body.type : 'nail';
 
   const id = nanoid();
   const slug = slugify(body.name) + '-' + nanoid().slice(0, 6);
   const now = Math.floor(Date.now() / 1000);
 
   await c.env.DB.prepare(
-    'INSERT INTO salons (id, name, slug, description, address, created_at) VALUES (?, ?, ?, ?, ?, ?)'
-  ).bind(id, body.name, slug, body.description ?? null, body.address ?? null, now).run();
+    'INSERT INTO salons (id, name, slug, type, description, address, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)'
+  ).bind(id, body.name, slug, type, body.description ?? null, body.address ?? null, now).run();
 
   const linkId = nanoid();
   await c.env.DB.prepare(
     'INSERT INTO salon_professionals (id, salon_id, professional_id, joined_at) VALUES (?, ?, ?, ?)'
   ).bind(linkId, id, user.sub, now).run();
 
-  return c.json({ salon: { id, name: body.name, slug, description: body.description ?? null, address: body.address ?? null } }, 201);
+  return c.json({ salon: { id, name: body.name, slug, type, description: body.description ?? null, address: body.address ?? null } }, 201);
 });
 
 // Get salon details
 salons.get('/:id', authMiddleware, async (c) => {
   const salon = await c.env.DB.prepare(
-    'SELECT id, name, slug, description, address, created_at FROM salons WHERE id = ?'
+    'SELECT id, name, slug, type, description, address, created_at FROM salons WHERE id = ?'
   ).bind(c.req.param('id')).first();
   if (!salon) return c.json({ error: 'Salon not found', code: 'NOT_FOUND' }, 404);
 
@@ -135,7 +151,7 @@ salons.get('/:id/clients', authMiddleware, async (c) => {
 salons.get('/my/connected', authMiddleware, async (c) => {
   const user = c.get('user');
   const connected = await c.env.DB.prepare(
-    `SELECT s.id, s.name, s.slug, s.description, s.address
+    `SELECT s.id, s.name, s.slug, s.type, s.description, s.address
      FROM salons s
      JOIN salon_clients sc ON sc.salon_id = s.id
      WHERE sc.client_id = ?`

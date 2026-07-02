@@ -25,10 +25,13 @@ export type User = {
   created_at: number;
 };
 
+export type SalonType = 'nail' | 'hair' | 'barber';
+
 export type Salon = {
   id: string;
   name: string;
   slug: string;
+  type: SalonType;
   description: string | null;
   address: string | null;
   created_at: number;

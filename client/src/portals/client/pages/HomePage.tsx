@@ -1,11 +1,27 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../../store/auth';
-import { salonApi, Salon } from '../../../lib/api';
+import { salonApi, Salon, SalonType } from '../../../lib/api';
+
+type FilterOption = { value: SalonType | 'all'; label: string; icon: string };
+
+const FILTERS: FilterOption[] = [
+  { value: 'all', label: 'Todos', icon: '✦' },
+  { value: 'nail', label: 'Manicure', icon: '💅' },
+  { value: 'hair', label: 'Cabelo', icon: '✂️' },
+  { value: 'barber', label: 'Barbearia', icon: '🪒' },
+];
+
+const SALON_TYPE_LABEL: Record<SalonType, string> = {
+  nail: 'Manicure',
+  hair: 'Cabelo',
+  barber: 'Barbearia',
+};
 
 export function HomePage() {
   const user = useAuthStore(s => s.user);
   const [query, setQuery] = useState('');
+  const [activeFilter, setActiveFilter] = useState<SalonType | 'all'>('all');
   const [results, setResults] = useState<Salon[]>([]);
   const [mySalons, setMySalons] = useState<Salon[]>([]);
   const [searching, setSearching] = useState(false);
@@ -19,15 +35,16 @@ export function HomePage() {
 
   useEffect(() => {
     clearTimeout(debounceRef.current);
-    if (query.trim().length < 2) { setResults([]); return; }
+    if (query.trim().length < 2 && activeFilter === 'all') { setResults([]); return; }
     setSearching(true);
     debounceRef.current = setTimeout(() => {
-      salonApi.search(query)
+      const type = activeFilter !== 'all' ? activeFilter : undefined;
+      salonApi.search(query, type)
         .then(r => setResults(r.salons))
         .catch(() => setResults([]))
         .finally(() => setSearching(false));
     }, 400);
-  }, [query]);
+  }, [query, activeFilter]);
 
   async function handleConnect(salon: Salon) {
     setConnecting(salon.id);
@@ -44,18 +61,20 @@ export function HomePage() {
   }
 
   const connectedIds = new Set(mySalons.map(s => s.id));
+  const showResults = results.length > 0;
+  const showEmpty = (query.trim().length >= 2 || activeFilter !== 'all') && !searching && results.length === 0;
 
   return (
     <div className="page-container pt-4">
       <div className="mb-6">
         <h2 className="font-display text-2xl font-semibold text-neutral-900 mb-1">
-          Olá, {user?.name.split(' ')[0]} 💅
+          Olá, {user?.name.split(' ')[0]}
         </h2>
         <p className="text-neutral-500 text-sm">Encontre seu salão favorito</p>
       </div>
 
       {/* Search */}
-      <div className="relative mb-6">
+      <div className="relative mb-3">
         <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500" width="18" height="18" viewBox="0 0 18 18" fill="none">
           <circle cx="8" cy="8" r="5.5" stroke="currentColor" strokeWidth="1.5" />
           <path d="M12.5 12.5L16 16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
@@ -74,14 +93,37 @@ export function HomePage() {
         )}
       </div>
 
+      {/* Category filter chips */}
+      <div className="flex gap-2 mb-6 overflow-x-auto pb-1">
+        {FILTERS.map(f => (
+          <button
+            key={f.value}
+            onClick={() => setActiveFilter(f.value)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-150 border-2 ${
+              activeFilter === f.value
+                ? 'bg-primary text-white border-primary'
+                : 'bg-surface text-neutral-500 border-neutral-100 hover:border-primary/40'
+            }`}
+          >
+            <span>{f.icon}</span>
+            {f.label}
+          </button>
+        ))}
+      </div>
+
       {/* Search results */}
-      {results.length > 0 && (
+      {showResults && (
         <div className="mb-6 space-y-2 animate-fade-in">
           <h3 className="text-sm font-semibold text-neutral-500 uppercase tracking-wider">Resultados</h3>
           {results.map(salon => (
             <div key={salon.id} className="card p-4 flex items-center justify-between gap-3">
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-neutral-900 truncate">{salon.name}</p>
+                <div className="flex items-center gap-2 mb-0.5">
+                  <p className="font-semibold text-neutral-900 truncate">{salon.name}</p>
+                  <span className="text-xs text-neutral-500 bg-neutral-100 px-2 py-0.5 rounded-full flex-shrink-0">
+                    {SALON_TYPE_LABEL[salon.type] ?? salon.type}
+                  </span>
+                </div>
                 {salon.address && <p className="text-sm text-neutral-500 truncate">{salon.address}</p>}
               </div>
               {connectedIds.has(salon.id) ? (
@@ -102,9 +144,13 @@ export function HomePage() {
         </div>
       )}
 
-      {query.trim().length >= 2 && !searching && results.length === 0 && (
+      {showEmpty && (
         <div className="text-center py-6 animate-fade-in">
-          <p className="text-neutral-500 text-sm">Nenhum salão encontrado para "{query}"</p>
+          <p className="text-neutral-500 text-sm">
+            {query.trim().length >= 2
+              ? `Nenhum salão encontrado para "${query}"`
+              : `Nenhum ${activeFilter !== 'all' ? SALON_TYPE_LABEL[activeFilter] : 'salão'} cadastrado ainda`}
+          </p>
         </div>
       )}
 
@@ -113,7 +159,7 @@ export function HomePage() {
         <h3 className="text-sm font-semibold text-neutral-500 uppercase tracking-wider mb-3">Meus Salões</h3>
         {mySalons.length === 0 ? (
           <div className="text-center py-10 space-y-2">
-            <span className="text-4xl">💅</span>
+            <span className="text-4xl">✦</span>
             <p className="text-neutral-500 text-sm">Conecte-se a um salão para começar a agendar</p>
           </div>
         ) : (
@@ -128,7 +174,12 @@ export function HomePage() {
                   {salon.name[0]}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-neutral-900 truncate">{salon.name}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="font-semibold text-neutral-900 truncate">{salon.name}</p>
+                    <span className="text-xs text-neutral-500 bg-neutral-100 px-2 py-0.5 rounded-full flex-shrink-0">
+                      {SALON_TYPE_LABEL[salon.type] ?? salon.type}
+                    </span>
+                  </div>
                   {salon.description && (
                     <p className="text-sm text-neutral-500 truncate">{salon.description}</p>
                   )}

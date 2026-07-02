@@ -5,15 +5,15 @@ export default {
     extend: {
       colors: {
         primary: {
-          DEFAULT: '#C9607A',
-          light: '#F2A7BB',
-          pale: '#FDF0F4',
+          DEFAULT: '#C9A84C',
+          light: '#E8D5A3',
+          pale: '#FAF6ED',
         },
-        accent: '#A0522D',
+        accent: '#1A1A1A',
         neutral: {
-          900: '#1A1219',
-          500: '#7A6872',
-          100: '#F7F3F5',
+          900: '#1A1A1A',
+          500: '#6B5E56',
+          100: '#F5F1ED',
         },
         success: '#5C9E7F',
         warning: '#D4A853',
@@ -32,7 +32,7 @@ export default {
         full: '9999px',
       },
       boxShadow: {
-        card: '0 2px 12px rgba(201, 96, 122, 0.08)',
+        card: '0 2px 12px rgba(201, 168, 76, 0.10)',
         modal: '0 8px 40px rgba(26, 18, 25, 0.18)',
       },
     },

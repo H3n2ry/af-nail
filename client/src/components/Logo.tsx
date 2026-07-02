@@ -9,14 +9,15 @@ export function Logo({ className = '', size = 'md' }: Props) {
 
   return (
     <span className={`font-display italic font-semibold text-primary flex items-center gap-1 ${sizes[size]} ${className}`}>
-      Af
-      {/* Stylized nail icon replacing the dot */}
+      af
       <svg width={s} height={s} viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <ellipse cx="10" cy="6" rx="5.5" ry="5" fill="#C9607A" />
-        <rect x="7" y="10" width="6" height="8" rx="2" fill="#C9607A" />
-        <ellipse cx="10" cy="5.5" rx="3.5" ry="3" fill="#F2A7BB" opacity="0.5" />
+        <circle cx="10" cy="10" r="9" fill="#C9A84C" />
+        <circle cx="10" cy="10" r="9" fill="#C9A84C" />
+        <path d="M6 10.5C6 10.5 7.5 13 10 13C12.5 13 14 10.5 14 10.5" stroke="#1A1A1A" strokeWidth="1.5" strokeLinecap="round" />
+        <circle cx="7.5" cy="8" r="1" fill="#1A1A1A" />
+        <circle cx="12.5" cy="8" r="1" fill="#1A1A1A" />
       </svg>
-      nail
+      salon
     </span>
   );
 }

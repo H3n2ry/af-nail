@@ -1,7 +1,7 @@
 const BASE_URL = import.meta.env.VITE_API_URL ?? '/api';
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const token = localStorage.getItem('af_nail_token');
+  const token = localStorage.getItem('af_salon_token');
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(options.headers as Record<string, string>),
@@ -74,8 +74,12 @@ export type Subscription = {
 
 // Salons
 export const salonApi = {
-  search: (q: string) => api.get<{ salons: Salon[] }>(`/salons/search?q=${encodeURIComponent(q)}`),
-  create: (data: { name: string; description?: string; address?: string }) =>
+  search: (q: string, type?: SalonType) => {
+    const params = new URLSearchParams({ q });
+    if (type) params.set('type', type);
+    return api.get<{ salons: Salon[] }>(`/salons/search?${params}`);
+  },
+  create: (data: { name: string; type: SalonType; description?: string; address?: string }) =>
     api.post<{ salon: Salon }>('/salons', data),
   get: (id: string) => api.get<{ salon: Salon; professionals: User[] }>(`/salons/${id}`),
   connect: (id: string) => api.post<{ success: boolean }>(`/salons/${id}/connect`, {}),
@@ -152,10 +156,13 @@ export type User = {
   created_at?: number;
 };
 
+export type SalonType = 'nail' | 'hair' | 'barber';
+
 export type Salon = {
   id: string;
   name: string;
   slug: string;
+  type: SalonType;
   description?: string | null;
   address?: string | null;
   created_at?: number;
