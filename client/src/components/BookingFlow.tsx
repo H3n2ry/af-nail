@@ -45,7 +45,7 @@ export function BookingFlow({ isOpen, onClose, service, salonId, professionals, 
     if (selectedDate && selectedPro) {
       setLoadingSlots(true);
       setSelectedTime('');
-      availabilityApi.slots(selectedPro.id, selectedDate)
+      availabilityApi.slots(selectedPro.id, selectedDate, service?.duration_minutes)
         .then(r => setSlots(r.slots))
         .catch(() => setSlots([]))
         .finally(() => setLoadingSlots(false));

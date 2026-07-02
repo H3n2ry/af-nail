@@ -110,8 +110,8 @@ export const availabilityApi = {
   get: (professionalId: string) => api.get<{ availability: Availability[] }>(`/professionals/${professionalId}`),
   update: (professionalId: string, data: AvailabilityInput[]) =>
     api.put<{ success: boolean }>(`/professionals/${professionalId}`, data),
-  slots: (professionalId: string, date: string) =>
-    api.get<{ slots: Slot[]; date: string }>(`/professionals/${professionalId}/slots?date=${date}`),
+  slots: (professionalId: string, date: string, duration?: number) =>
+    api.get<{ slots: Slot[]; date: string }>(`/professionals/${professionalId}/slots?date=${date}${duration ? `&duration=${duration}` : ''}`),
 };
 
 // Appointments

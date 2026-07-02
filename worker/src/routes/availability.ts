@@ -8,18 +8,18 @@ function nanoid() {
   return crypto.randomUUID().replace(/-/g, '').slice(0, 21);
 }
 
-function generateSlots(startTime: string, endTime: string, durationMinutes: number = 60): string[] {
+function generateSlots(startTime: string, endTime: string): string[] {
   const slots: string[] = [];
   const [startH, startM] = startTime.split(':').map(Number);
   const [endH, endM] = endTime.split(':').map(Number);
   let current = startH * 60 + startM;
   const end = endH * 60 + endM;
 
-  while (current + durationMinutes <= end) {
+  while (current < end) {
     const h = Math.floor(current / 60).toString().padStart(2, '0');
     const m = (current % 60).toString().padStart(2, '0');
     slots.push(`${h}:${m}`);
-    current += 60; // always 1h intervals
+    current += 30;
   }
   return slots;
 }
@@ -85,33 +85,41 @@ availability.get('/:professionalId/slots', async (c) => {
 
   if (!avail) return c.json({ slots: [] });
 
+  const durationParam = c.req.query('duration');
+  const requestedDuration = durationParam ? Math.max(30, parseInt(durationParam)) : 30;
+
+  const [endH, endM] = avail.end_time.split(':').map(Number);
+  const endMin = endH * 60 + endM;
+
   const allSlots = generateSlots(avail.start_time, avail.end_time);
 
-  // Get booked times
+  // Get booked appointments with their durations
   const booked = await c.env.DB.prepare(
-    `SELECT scheduled_time, s.is_combo, s.duration_minutes
+    `SELECT a.scheduled_time, s.duration_minutes
      FROM appointments a
      JOIN services s ON s.id = a.service_id
      WHERE a.professional_id = ? AND a.scheduled_date = ? AND a.status = 'confirmed'`
-  ).bind(profId, date).all<{ scheduled_time: string; is_combo: number; duration_minutes: number }>();
+  ).bind(profId, date).all<{ scheduled_time: string; duration_minutes: number }>();
 
-  const occupiedTimes = new Set<string>();
-  for (const appt of booked.results) {
-    occupiedTimes.add(appt.scheduled_time);
-    if (appt.is_combo) {
-      // Combo occupies next slot too
-      const [h, m] = appt.scheduled_time.split(':').map(Number);
-      const nextMin = h * 60 + m + 60;
-      const nextH = Math.floor(nextMin / 60).toString().padStart(2, '0');
-      const nextM = (nextMin % 60).toString().padStart(2, '0');
-      occupiedTimes.add(`${nextH}:${nextM}`);
+  const slots = allSlots.map(time => {
+    const [h, m] = time.split(':').map(Number);
+    const slotMin = h * 60 + m;
+
+    // Slot must fit within work hours
+    if (slotMin + requestedDuration > endMin) {
+      return { time, available: false };
     }
-  }
 
-  const slots = allSlots.map(time => ({
-    time,
-    available: !occupiedTimes.has(time),
-  }));
+    // Check interval overlap with each existing appointment
+    const hasConflict = booked.results.some(appt => {
+      const [ah, am] = appt.scheduled_time.split(':').map(Number);
+      const apptStart = ah * 60 + am;
+      const apptEnd = apptStart + appt.duration_minutes;
+      return slotMin < apptEnd && apptStart < slotMin + requestedDuration;
+    });
+
+    return { time, available: !hasConflict };
+  });
 
   return c.json({ slots, date, professional_id: profId });
 });
