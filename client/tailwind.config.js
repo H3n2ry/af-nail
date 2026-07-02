@@ -1,24 +1,33 @@
 /** @type {import('tailwindcss').Config} */
+
+function v(name) {
+  return ({ opacityValue }) =>
+    opacityValue !== undefined
+      ? `rgb(var(${name}) / ${opacityValue})`
+      : `rgb(var(${name}))`;
+}
+
 export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
         primary: {
-          DEFAULT: '#C9A84C',
-          light: '#E8D5A3',
-          pale: '#FAF6ED',
+          DEFAULT: v('--color-primary'),
+          light: v('--color-primary-light'),
+          pale: v('--color-primary-pale'),
         },
-        accent: '#1A1A1A',
+        accent: v('--color-accent'),
         neutral: {
-          900: '#1A1A1A',
-          500: '#6B5E56',
-          100: '#F5F1ED',
+          900: v('--color-neutral-900'),
+          500: v('--color-neutral-500'),
+          100: v('--color-neutral-100'),
         },
-        success: '#5C9E7F',
-        warning: '#D4A853',
-        error: '#C0392B',
-        surface: '#FFFFFF',
+        success: v('--color-success'),
+        warning: v('--color-warning'),
+        error: v('--color-error'),
+        surface: v('--color-surface'),
       },
       fontFamily: {
         display: ['"Cormorant Garamond"', 'serif'],
@@ -32,8 +41,8 @@ export default {
         full: '9999px',
       },
       boxShadow: {
-        card: '0 2px 12px rgba(201, 168, 76, 0.10)',
-        modal: '0 8px 40px rgba(26, 18, 25, 0.18)',
+        card: '0 2px 12px rgb(var(--color-primary) / 0.10)',
+        modal: '0 8px 40px rgb(var(--color-neutral-900) / 0.18)',
       },
     },
   },

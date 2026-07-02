@@ -2,18 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Light mode (default) ── */
 :root {
-  --color-primary: #C9A84C;
-  --color-primary-light: #E8D5A3;
-  --color-primary-pale: #FAF6ED;
-  --color-accent: #1A1A1A;
-  --color-neutral-900: #1A1A1A;
-  --color-neutral-500: #6B5E56;
-  --color-neutral-100: #F5F1ED;
-  --color-success: #5C9E7F;
-  --color-warning: #D4A853;
-  --color-error: #C0392B;
-  --color-surface: #FFFFFF;
+  /* RGB triplets — required for Tailwind opacity modifiers (bg-primary/10) */
+  --color-primary:       201 168 76;   /* #C9A84C gold */
+  --color-primary-light: 232 213 163;  /* #E8D5A3 */
+  --color-primary-pale:  250 246 237;  /* #FAF6ED */
+  --color-accent:        26 26 26;     /* #1A1A1A charcoal */
+  --color-neutral-900:   26 26 26;     /* #1A1A1A */
+  --color-neutral-500:   107 94 86;    /* #6B5E56 */
+  --color-neutral-100:   245 241 237;  /* #F5F1ED */
+  --color-success:       92 158 127;   /* #5C9E7F */
+  --color-warning:       212 168 83;   /* #D4A853 */
+  --color-error:         192 57 43;    /* #C0392B */
+  --color-surface:       255 255 255;  /* #FFFFFF */
+
   --font-display: 'Cormorant Garamond', serif;
   --font-body: 'DM Sans', sans-serif;
   --font-mono: 'DM Mono', monospace;
@@ -21,8 +24,18 @@
   --radius-md: 16px;
   --radius-lg: 24px;
   --radius-full: 9999px;
-  --shadow-card: 0 2px 12px rgba(201, 168, 76, 0.10);
-  --shadow-modal: 0 8px 40px rgba(26, 18, 25, 0.18);
+}
+
+/* ── Dark mode ── */
+.dark {
+  --color-primary:       201 168 76;   /* gold stays same */
+  --color-primary-light: 90 74 32;     /* dark gold border */
+  --color-primary-pale:  34 29 14;     /* dark gold tint bg */
+  --color-accent:        237 232 224;  /* #EDE8E0 near-white */
+  --color-neutral-900:   237 232 224;  /* near-white text */
+  --color-neutral-500:   155 142 130;  /* #9B8E82 mid */
+  --color-neutral-100:   20 18 14;     /* #14120E dark bg */
+  --color-surface:       30 27 20;     /* #1E1B14 card bg */
 }
 
 * {
@@ -37,10 +50,11 @@ html, body, #root {
 
 body {
   font-family: var(--font-body);
-  background-color: var(--color-neutral-100);
-  color: var(--color-neutral-900);
+  background-color: rgb(var(--color-neutral-100));
+  color: rgb(var(--color-neutral-900));
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 @layer components {
@@ -91,31 +105,20 @@ body {
   }
 }
 
-/* Scrollbar customization */
-::-webkit-scrollbar {
-  width: 4px;
-}
-::-webkit-scrollbar-track {
-  background: var(--color-neutral-100);
-}
-::-webkit-scrollbar-thumb {
-  background: var(--color-primary-light);
-  border-radius: 9999px;
-}
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: rgb(var(--color-neutral-100)); }
+::-webkit-scrollbar-thumb { background: rgb(var(--color-primary) / 0.4); border-radius: 9999px; }
 
 /* Animations */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
-.animate-fade-in {
-  animation: fadeIn 0.2s ease-out forwards;
-}
+.animate-fade-in { animation: fadeIn 0.2s ease-out forwards; }
 
 @keyframes slideUp {
   from { opacity: 0; transform: translateY(24px); }
   to { opacity: 1; transform: translateY(0); }
 }
-.animate-slide-up {
-  animation: slideUp 0.25s ease-out forwards;
-}
+.animate-slide-up { animation: slideUp 0.25s ease-out forwards; }

@@ -74,8 +74,8 @@ export function DashboardPage() {
       >
         <span className="flex items-center gap-2 font-medium text-neutral-900">
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-            <circle cx="9" cy="9" r="7" stroke="#C9607A" strokeWidth="1.5" />
-            <path d="M9 5v4l2.5 1.5" stroke="#C9607A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            <circle cx="9" cy="9" r="7" stroke="currentColor" className="text-primary" strokeWidth="1.5" />
+            <path d="M9 5v4l2.5 1.5" stroke="currentColor" className="text-primary" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
           Configurar meus horários de atendimento
         </span>
