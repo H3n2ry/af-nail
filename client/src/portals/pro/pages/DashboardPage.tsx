@@ -51,8 +51,8 @@ export function DashboardPage() {
   return (
     <div className="page-container pt-4">
       <div className="mb-6">
-        <p className="text-neutral-500 text-sm">Bem-vinda de volta</p>
-        <h2 className="font-display text-2xl font-semibold text-neutral-900">{user?.name.split(' ')[0]} ✨</h2>
+        <p className="text-neutral-500 text-sm">Bem-vindo de volta</p>
+        <h2 className="font-display text-2xl font-semibold text-neutral-900">{user?.name.split(' ')[0]}</h2>
       </div>
 
       {/* Status da assinatura */}
@@ -127,7 +127,6 @@ export function DashboardPage() {
           </div>
         ) : data?.today_appointments.length === 0 ? (
           <div className="text-center py-10 space-y-2">
-            <span className="text-4xl">🌸</span>
             <p className="text-neutral-500 text-sm">Nenhum agendamento para hoje</p>
           </div>
         ) : (

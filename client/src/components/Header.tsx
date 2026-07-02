@@ -28,12 +28,17 @@ export function Header({ title, showBack, showLogo = true, portal = 'client' }: 
               aria-label="Voltar"
             >
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M12.5 15L7.5 10L12.5 5" stroke="#C9607A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M12.5 15L7.5 10L12.5 5" stroke="#C9A84C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </button>
           )}
           {showLogo && !showBack && <Logo size="sm" />}
-          {title && <h1 className="font-display text-lg font-semibold text-neutral-900">{title}</h1>}
+          {title && (
+            <h1 className="font-display text-xl font-semibold text-neutral-900 tracking-tight">
+              {title}
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary ml-1.5 mb-1 align-middle" />
+            </h1>
+          )}
         </div>
 
         <button
